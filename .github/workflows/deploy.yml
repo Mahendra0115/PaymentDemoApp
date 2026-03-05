@@ -9,10 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Java
+      - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
@@ -34,11 +35,6 @@ jobs:
             docker stop payment-app || true
             docker rm payment-app || true
 
-            docker build -t payment-service .
-
             docker run -d -p 8080:8080 \
-              --name payment-app \
-              -e SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/payment_db \
-              -e SPRING_DATASOURCE_USERNAME=root \
-              -e SPRING_DATASOURCE_PASSWORD=root \
-              payment-service
+            --name payment-app \
+            payment-service
