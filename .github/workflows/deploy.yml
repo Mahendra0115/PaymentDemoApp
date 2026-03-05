@@ -1,0 +1,44 @@
+name: CI/CD Spring Boot Docker
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build Jar
+        run: mvn clean package -DskipTests
+
+      - name: Build Docker Image
+        run: docker build -t payment-service .
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            docker stop payment-app || true
+            docker rm payment-app || true
+
+            docker build -t payment-service .
+
+            docker run -d -p 8080:8080 \
+              --name payment-app \
+              -e SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/payment_db \
+              -e SPRING_DATASOURCE_USERNAME=root \
+              -e SPRING_DATASOURCE_PASSWORD=root \
+              payment-service
