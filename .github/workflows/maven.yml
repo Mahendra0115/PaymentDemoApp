@@ -2,7 +2,7 @@ name: Build Docker & Deploy to EC2 with docker-compose
 
 on:
   push:
-    branches: [ main ]   # ya tumhara branch
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -12,48 +12,35 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Java setup for Maven build (JAR banana)
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
-
-      # JAR build karo (Dockerfile COPY target/... use karega)
-      - name: Build JAR with Maven
-        run: mvn clean package -DskipTests   # tests skip agar nahi chahiye
-
-      # Docker setup for build
+      # Docker Buildx setup (multi-stage ke liye better)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # SSH se EC2 pe deploy (no Docker Hub needed)
+      # SSH se EC2 pe deploy
       - name: Deploy to EC2 via SSH
-        uses: appleboy/ssh-action@v1.0.3   # latest stable
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            set -e  # error pe stop
+            set -e
 
-            # Repo folder banao ya update karo (agar pehle se nahi hai)
+            # Repo folder setup
             mkdir -p ~/my-app
             cd ~/my-app
 
-            # Code pull karo (pehle baar clone karna padega manually ya yahan add karo)
-            # Agar pehli baar hai toh pehle EC2 pe manually: git clone your-repo-url ~/my-app
+            # Git pull ya clone (tumhara repo)
             git pull origin main || git clone https://github.com/Mahendra0115/PaymentDemoApp.git .
 
-            # Docker image build (Dockerfile se, JAR copy hoga)
+            # Previous containers stop
             docker compose down || true
 
-            # MySQL container + app container up (docker-compose.yml use)
-            docker compose up -d --build --force-recreate
+            # Build + up (Dockerfile ab Maven build karega)
+            docker compose build --no-cache   # --no-cache pehli baar ya force fresh ke liye
+            docker compose up -d --force-recreate
 
-            # Check status
+            # Status check
             docker compose ps
-            docker logs my-app_app_1   # app container name check kar lo docker ps se
-
+            docker compose logs --tail=50 app   # app service ke recent logs
