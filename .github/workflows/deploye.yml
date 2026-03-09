@@ -23,11 +23,19 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         
-# Step 7 — Project Build (JAR)
+# Step 5 — Project Build (JAR)
     - name: Build Jar
       run: mvn clean package -DskipTests
 
-# Step 8 — EC2 SSH Key GitHub me Add Karna
+# Step 6 — JAR EC2 par Copy Karna
+    - name: Copy jar to EC2
+      uses: appleboy/scp-action@master
+      with:
+       host: ${{ secrets.EC2_HOST }}
+       username: ${{ secrets.EC2_USER }}
+       key: ${{ secrets.EC2_KEY }}
+       source: "target/*.jar"
+       target: "/home/ubuntu/"
       
       
     
