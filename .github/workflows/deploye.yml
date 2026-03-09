@@ -1,0 +1,22 @@
+name: Payment-app
+
+on: 
+ push:
+   branches: 
+     - main
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
