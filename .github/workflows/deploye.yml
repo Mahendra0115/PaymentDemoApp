@@ -37,5 +37,16 @@ jobs:
        source: "target/*.jar"
        target: "/home/ubuntu/"
       
-      
+   # Step 7 — EC2 par JAR Run Karna
+
+    - name: Run jar on EC2
+      uses: appleboy/ssh-action@master
+      with:
+       host: ${{ secrets.EC2_HOST }}
+       username: ${{ secrets.EC2_USER }}
+       key: ${{ secrets.EC2_KEY }}
+       script: |
+        pkill -f 'java -jar' || true
+        nohup java -jar /home/ubuntu/*.jar > app.log 2>&1 &
+   
     
