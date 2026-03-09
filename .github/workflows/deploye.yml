@@ -1,22 +1,33 @@
-name: Payment-app
 
+# STEP :1  Basic Workflow Start
+name: Payment-app
 on: 
  push:
    branches: 
      - main
-
+     
+# Step 2 — Job Create Karna
 jobs:
   build:
     runs-on: ubuntu-24.04
-
+    
+# Step 3 — Code Download Step
     steps:
-
     - name: Checkout Code
       uses: actions/checkout@v3
-
+      
+# Step 4 — Java Setup
     - name: Setup Java
       uses: actions/setup-java@v3
       with:
         java-version: '17'
         distribution: 'temurin'
+        
+# Step 7 — Project Build (JAR)
+    - name: Build Jar
+      run: mvn clean package -DskipTests
+
+# Step 8 — EC2 SSH Key GitHub me Add Karna
+      
+      
     
